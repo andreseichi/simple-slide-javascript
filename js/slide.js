@@ -20,21 +20,35 @@ export const Slide = () => {
   };
 
   const onMove = (event) => {
-    const finalPosition = updatePosition(event.clientX);
+    const pointerPosition =
+      event.type === 'mousemove'
+        ? event.clientX
+        : event.changedTouches[0].clientX;
+    const finalPosition = updatePosition(pointerPosition);
     moveSlide(finalPosition);
   };
 
   const onStart = (event) => {
-    event.preventDefault();
-    dist.startX = event.clientX;
-    slideWrapper.addEventListener('mousemove', onMove);
+    let moveType;
+    if (event.type === 'mousedown') {
+      event.preventDefault();
+      dist.startX = event.clientX;
+      moveType = 'mousemove';
+    } else {
+      dist.startX = event.changedTouches[0].clientX;
+      moveType = 'touchmove';
+    }
+    slideWrapper.addEventListener(moveType, onMove);
   };
 
-  const onEnd = () => {
-    slideWrapper.removeEventListener('mousemove', onMove);
+  const onEnd = (event) => {
+    const moveType = event.type === 'mouseup' ? 'mousemove' : 'touchmove';
+    slideWrapper.removeEventListener(moveType, onMove);
     dist.finalPosition = dist.movePosition;
   };
 
   slideWrapper.addEventListener('mousedown', onStart);
+  slideWrapper.addEventListener('touchstart', onStart);
   slideWrapper.addEventListener('mouseup', onEnd);
+  slideWrapper.addEventListener('touchend', onEnd);
 };
